@@ -1,0 +1,78 @@
+name: Auto Release
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set environment variables
+      run: |
+        echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: "每日涩涩-${{ env.CURRENT_DATE }}"
+        release_name: "每日涩涩·${{ env.CURRENT_DATE }}"
+        body: "每日涩涩·${{ env.CURRENT_DATE }}"
+        draft: false
+        prerelease: false
+
+    - name: Debug release information
+      run: |
+        echo "Tag Name: ${{ steps.create_release.outputs.tag_name }}"
+        echo "Release ID: ${{ steps.create_release.outputs.id }}"
+
+    - name: Find and upload all zip files in specified directories
+      run: |
+        # Check if the release was created successfully
+        if [ -z "${{ steps.create_release.outputs.tag_name }}" ]; then
+          echo "Release creation failed. Exiting..."
+          exit 1
+        fi
+
+        # Find all zip files in specified directories
+        find ./code/欢迎回家/Archive -type f -name "*.zip" | while read file; do
+          if [ -f "$file" ]; then
+            echo "Found $file"
+            echo "UPLOAD_FILE=$file" >> $GITHUB_ENV
+          else
+            echo "File $file does not exist. Skipping..."
+          fi
+        done
+
+        find ./code/Archive -type f -name "*.zip" | while read file; do
+          if [ -f "$file" ]; then
+            echo "Found $file"
+            echo "UPLOAD_FILE=$file" >> $GITHUB_ENV
+          else
+            echo "File $file does not exist. Skipping..."
+          fi
+        done
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload zip files to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ env.UPLOAD_FILE }}
+        asset_name: ${{ basename(env.UPLOAD_FILE) }}
+        asset_content_type: application/zip
+      if: env.UPLOAD_FILE != ''

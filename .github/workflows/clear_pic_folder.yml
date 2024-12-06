@@ -1,0 +1,22 @@
+name: Clear pic folder
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  workflow_call:  # 允许其他工作流调用此工作流
+
+jobs:
+  clear_pic_folder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Clear pic folder
+        run: |
+          cd code
+          rm -f -r /Archive/*
+          rm -f -r /欢迎回家/Archive/*
+          echo "old files cleared"
