@@ -26,9 +26,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: "每日涩涩-${{ env.CURRENT_DATE }}"
-        release_name: "每日涩涩·${{ env.CURRENT_DATE }}"
-        body: "每日涩涩·${{ env.CURRENT_DATE }}"
+        tag_name: "v* -每日涩涩-${{ env.CURRENT_DATE }}"
+        release_name: "v* -每日涩涩·${{ env.CURRENT_DATE }}"
+        body: "v* -每日涩涩·${{ env.CURRENT_DATE }}"
         draft: false
         prerelease: false
 
@@ -45,26 +45,27 @@ jobs:
           exit 1
         fi
 
-        # Find all zip files in specified directories
-        find ./code/欢迎回家/Archive -type f -name "*.zip" | while read file; do
-          if [ -f "$file" ]; then
-            echo "Found $file"
-            echo "UPLOAD_FILE=$file" >> $GITHUB_ENV
-          else
-            echo "File $file does not exist. Skipping..."
-          fi
+        # Initialize UPLOAD_FILE to an empty string
+        UPLOAD_FILE=""
+
+        for dir in "./code/欢迎回家/Archive" "./code/Archive"; do
+          find "$dir" -type f -name "*.zip" | while read file; do
+            if [ -f "$file" ]; then
+              echo "Found $file"
+              UPLOAD_FILE="$file"
+              echo "UPLOAD_FILE=$file" >> $GITHUB_ENV
+              BASENAME=$(basename "$file")
+              echo "UPLOAD_FILE_BASENAME=$BASENAME" >> $GITHUB_ENV
+            else
+              echo "File $file does not exist. Skipping..."
+            fi
+          done
         done
 
-        find ./code/Archive -type f -name "*.zip" | while read file; do
-          if [ -f "$file" ]; then
-            echo "Found $file"
-            echo "UPLOAD_FILE=$file" >> $GITHUB_ENV
-          else
-            echo "File $file does not exist. Skipping..."
-          fi
-        done
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # If no zip file was found, set UPLOAD_FILE to an empty string
+        if [ -z "$UPLOAD_FILE" ]; then
+          echo "UPLOAD_FILE=" >> $GITHUB_ENV
+        fi
 
     - name: Upload zip files to release
       uses: actions/upload-release-asset@v1
@@ -73,6 +74,6 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.UPLOAD_FILE }}
-        asset_name: ${{ basename(env.UPLOAD_FILE) }}
+        asset_name: ${{ env.UPLOAD_FILE_BASENAME }}
         asset_content_type: application/zip
       if: env.UPLOAD_FILE != ''
