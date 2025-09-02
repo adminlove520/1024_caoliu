@@ -1,4 +1,4 @@
-name: Update dailySex
+name: Daily Crawler Update
 
 on:
   schedule:
@@ -6,60 +6,46 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 permissions:
   contents: write
 
 jobs:
-  clear_folders:
-    runs-on: ubuntu-latest
-    needs: []
-    steps:
-      - name: Trigger clear_pic_folder workflow
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: clear_pic_folder
-          client-payload: '{"ref": "main"}'
   build:
-
     runs-on: ubuntu-latest
+    env:
+      PYTHONUTF8: 1
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: '3.9'
+
     - name: Install dependencies
       run: |
         cd code
         python -m pip install --upgrade pip
-        pip install chardet fake_useragent
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Runner (Images)
+
+    - name: Run Picture Crawler
       run: |
-        # mkdir -p code/pic
-        cd code
-        python legacy_scripts/草榴_P_auto.py
-    
-    - name: Runner (Novels)
+        cd code/scripts
+        python main.py --mode auto --forum pics --zip
+
+    - name: Run Literature Crawler
       run: |
-        # mkdir -p code/欢迎回家/Archive
-        cd code
-        python legacy_scripts/caoliu_word.py
+        cd code/scripts
+        python main.py --mode literature --forum literature --zip
 
     - name: Commit changes
       run: |
           git diff
           git config --global user.email 791751568@qq.com
           git config --global user.name adminlove520
-          git add code/欢迎回家/Archive/
-          git add code/Archive/
-          git commit -m "每日涩涩和小说（`date +'%Y-%m-%d'`）"
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-          github_token: ${{ github.token }}
+          git add code/zips/
+          git commit -m "每日内容更新（`date +'%Y-%m-%d'`）"
+          git push
