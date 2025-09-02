@@ -37,7 +37,7 @@ class CrawlerMain:
                             help='论坛板块键名')
         parser.add_argument('--start_page', type=int, default=5,
                             help='起始页面')
-        parser.add_argument('--end_page', type=int, default=10,
+        parser.add_argument('--end_page', type=int, default=3,
                             help='结束页面')
         
         # 自动模式参数

@@ -1,44 +1,43 @@
-name: Auto Release
+name: 1024 Auto Release
 
 on:
   schedule:
-    - cron: '0 10 * * *'
+    - cron: '0 0 * * *'  # 每天UTC时间0点执行（北京时间8点）
   workflow_dispatch:
     inputs:
       mode:
-        description: '爬虫运行模式'
-        required: false
+        description: '运行模式'
+        required: true
         default: 'github_actions'
         type: choice
         options:
-          - 'github_actions'
-          - 'auto'
-          - 'manual'
-          - 'literature'
-          - 'pic'
+          - github_actions
+          - auto
+          - manual
+          - literature
+          - pic
       forum_key:
         description: '论坛板块键名'
-        required: false
+        required: true
         default: 'pics'
-        type: string
       start_page:
         description: '起始页面'
-        required: false
-        default: '5'
+        required: true
+        default: 5
         type: number
       end_page:
         description: '结束页面'
-        required: false
-        default: '10'
+        required: true
+        default: 3
         type: number
       random_forum:
         description: '是否随机选择板块'
-        required: false
+        required: true
         default: true
         type: boolean
       zip_content:
-        description: '是否打包下载的内容'
-        required: false
+        description: '是否打包下载内容'
+        required: true
         default: true
         type: boolean
   push:
@@ -53,7 +52,7 @@ jobs:
       MODE: ${{ inputs.mode || 'github_actions' }}
       FORUM_KEY: ${{ inputs.forum_key || 'pics' }}
       START_PAGE: ${{ inputs.start_page || '5' }}
-      END_PAGE: ${{ inputs.end_page || '10' }}
+      END_PAGE: ${{ inputs.end_page || '3' }}
       RANDOM_FORUM: ${{ inputs.random_forum || 'true' }}
       ZIP_CONTENT: ${{ inputs.zip_content || 'true' }}
 
