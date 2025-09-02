@@ -166,7 +166,9 @@ jobs:
         draft: false
         prerelease: false
         fail_on_unmatched_files: false
-        files: './code/created_zips.txt'
+        files: |
+          ./code/zips/pictures/每日涩涩-雅俗共赏.zip
+          ./code/zips/pictures/每日涩涩-快乐齐天.zip
       timeout-minutes: 5  # 限制发布步骤为5分钟
 
     - name: Debug release information
