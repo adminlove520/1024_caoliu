@@ -68,13 +68,11 @@ jobs:
       with:
         tag_name: "每日涩涩-${{ env.CURRENT_DATE }}"
         name: "每日涩涩·${{ env.CURRENT_DATE }}"
-        body: "每日涩涩·${{ env.CURRENT_DATE }}\n\n优化内容：\n1. 避免打包空文件夹\n2. 优化大文件和多文件的压缩和上传"
+        body: "每日涩涩·${{ env.CURRENT_DATE }}\n\n优化内容：\n1. 避免打包空文件夹\n2. 优化大文件和多文件的压缩和上传\n3. 修复发布步骤中ZIP文件查找问题"
         draft: false
         prerelease: false
         fail_on_unmatched_files: false
-        files: |
-          ./code/*.zip
-          ./code/**/*.zip
+        files: './code/created_zips.txt'
 
     - name: Debug release information
       run: |

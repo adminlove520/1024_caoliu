@@ -154,7 +154,7 @@ class OptimizedZipper:
                     if forum_info['name'] in source_dir or forum_key in source_dir:
                         category = forum_key
                         break
-                        
+                         
             # 创建分类目录
             category_dir = os.path.join(output_dir, category)
             FileUtils.create_directory(category_dir)
