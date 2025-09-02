@@ -140,10 +140,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: "每日涩涩-${{ env.CURRENT_DATE }}"
-        name: "每日涩涩·${{ env.CURRENT_DATE }}"
+        tag_name: "daily-content-${{ env.CURRENT_DATE }}"
+        name: "每日内容更新-${{ env.CURRENT_DATE }}"
         body: |
-          每日涩涩·${{ env.CURRENT_DATE }}
+          每日内容更新-${{ env.CURRENT_DATE }}
           
           优化内容：
           1. 避免打包空文件夹
@@ -167,8 +167,8 @@ jobs:
         prerelease: false
         fail_on_unmatched_files: false
         files: |
-          ./code/zips/pictures/每日涩涩-雅俗共赏.zip
-          ./code/zips/pictures/每日涩涩-快乐齐天.zip
+          ./code/zips/pictures/每日内容-雅俗共赏.zip
+          ./code/zips/pictures/每日内容-快乐齐天.zip
       timeout-minutes: 5  # 限制发布步骤为5分钟
 
     - name: Debug release information
