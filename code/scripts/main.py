@@ -28,24 +28,24 @@ class CrawlerMain:
         parser = argparse.ArgumentParser(description='草榴论坛爬虫工具')
         
         # 模式选择
-        parser.add_argument('--mode', '-m', type=str, default='auto',
+        parser.add_argument('--mode', '-m', type=str, default='github_actions',
                             choices=['auto', 'manual', 'github_actions', 'literature', 'pic'],
                             help='爬虫运行模式')
         
         # 通用参数
         parser.add_argument('--forum', '-f', type=str, default='pics',
                             help='论坛板块键名')
-        parser.add_argument('--start_page', type=int, default=1,
+        parser.add_argument('--start_page', type=int, default=5,
                             help='起始页面')
-        parser.add_argument('--end_page', type=int, default=1,
+        parser.add_argument('--end_page', type=int, default=10,
                             help='结束页面')
         
         # 自动模式参数
-        parser.add_argument('--random', action='store_true',
+        parser.add_argument('--random', action=argparse.BooleanOptionalAction, default=True,
                             help='是否随机选择板块')
         
         # 打包参数
-        parser.add_argument('--zip', action='store_true',
+        parser.add_argument('--zip', action=argparse.BooleanOptionalAction, default=True,
                             help='是否打包下载的内容')
         
         return parser.parse_args()
@@ -96,11 +96,11 @@ class CrawlerMain:
         
         # 用户输入页面范围
         try:
-            start_page = int(input("请输入起始页面 (默认: 1): ").strip() or "1")
-            end_page = int(input("请输入结束页面 (默认: 1): ").strip() or "1")
+            start_page = int(input("请输入起始页面 (默认: 5): ").strip() or "5")
+            end_page = int(input("请输入结束页面 (默认: 10): ").strip() or "10")
         except ValueError:
             print("输入无效，使用默认值")
-            start_page, end_page = 1, 1
+            start_page, end_page = 5, 10
         
         # 选择爬取类型
         crawl_type = input("请选择爬取类型 (pic/literature, 默认: pic): ").strip().lower() or "pic"
@@ -141,19 +141,28 @@ class CrawlerMain:
         """运行GitHub Actions模式"""
         logger.info("===== GitHub Actions 模式 ====")
         
-        # 选择一个随机板块和随机页面
-        forum_key = random.choice(list(Config.FORUMS.keys()))
-        start_page = random.randint(1, 10)
-        end_page = start_page  # 只爬取一个随机页面
+        # 如果没有指定参数，则使用环境变量或默认值
+        forum_key = os.environ.get('FORUM_KEY', args.forum)
+        start_page = int(os.environ.get('START_PAGE', str(args.start_page)))
+        end_page = int(os.environ.get('END_PAGE', str(args.end_page)))
+        random_forum = os.environ.get('RANDOM_FORUM', str(args.random)).lower() == 'true'
+        zip_content = os.environ.get('ZIP_CONTENT', str(args.zip)).lower() == 'true'
         
-        logger.info(f"随机选择板块: {forum_key} - {Config.FORUMS[forum_key]}")
-        logger.info(f"随机选择页面: {start_page}")
+        # 如果需要随机选择板块
+        if random_forum:
+            forum_key = random.choice(list(Config.FORUMS.keys()))
+            # 随机页面范围
+            start_page = random.randint(1, 10)
+            end_page = start_page  # 只爬取一个随机页面
+            
+            logger.info(f"随机选择板块: {forum_key} - {Config.FORUMS[forum_key]}")
+            logger.info(f"随机选择页面: {start_page}")
         
         # 更新参数
         args.forum = forum_key
         args.start_page = start_page
         args.end_page = end_page
-        args.zip = True  # GitHub Actions模式自动打包
+        args.zip = zip_content
         
         # 执行爬虫
         CrawlerMain.run_pic_crawler(args)
@@ -186,8 +195,10 @@ class CrawlerMain:
         logger.info(f"开始打包 {content_type} 内容")
         
         # 创建输出文件名
-        dir_name = os.path.basename(source_dir)
-        zip_filename = Config.get_today_zip_filename(dir_name)
+        if content_type == 'pic':
+            zip_filename = "每日涩涩-雅俗共赏.zip"
+        else:
+            zip_filename = "每日涩涩-快乐齐天.zip"
         
         # 使用统一的ZIP输出目录
         output_dir = Config.ZIP_OUTPUT_DIR
@@ -206,7 +217,7 @@ class CrawlerMain:
         if success:
             logger.info(f"打包完成，生成ZIP文件: {output_path}")
             # 记录创建的ZIP文件路径
-            with open('created_zips.txt', 'w', encoding='utf-8') as f:
+            with open(os.path.join(script_dir, 'created_zips.txt'), 'w', encoding='utf-8') as f:
                 # 转换为相对路径，便于GitHub Actions使用
                 rel_path = os.path.relpath(output_path)
                 f.write(f"{rel_path}\n")

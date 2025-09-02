@@ -4,6 +4,43 @@ on:
   schedule:
     - cron: '0 10 * * *'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: '爬虫运行模式'
+        required: false
+        default: 'github_actions'
+        type: choice
+        options:
+          - 'github_actions'
+          - 'auto'
+          - 'manual'
+          - 'literature'
+          - 'pic'
+      forum_key:
+        description: '论坛板块键名'
+        required: false
+        default: 'pics'
+        type: string
+      start_page:
+        description: '起始页面'
+        required: false
+        default: '5'
+        type: number
+      end_page:
+        description: '结束页面'
+        required: false
+        default: '10'
+        type: number
+      random_forum:
+        description: '是否随机选择板块'
+        required: false
+        default: true
+        type: boolean
+      zip_content:
+        description: '是否打包下载的内容'
+        required: false
+        default: true
+        type: boolean
   push:
     branches:
       - main
@@ -13,6 +50,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PYTHONUTF8: 1
+      MODE: ${{ inputs.mode || 'github_actions' }}
+      FORUM_KEY: ${{ inputs.forum_key || 'pics' }}
+      START_PAGE: ${{ inputs.start_page || '5' }}
+      END_PAGE: ${{ inputs.end_page || '10' }}
+      RANDOM_FORUM: ${{ inputs.random_forum || 'true' }}
+      ZIP_CONTENT: ${{ inputs.zip_content || 'true' }}
 
     steps:
     - name: Checkout repository
@@ -22,6 +65,19 @@ jobs:
       run: |
         echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
         echo "CURRENT_TIME=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+        echo "MODE=${{ env.MODE }}" >> $GITHUB_ENV
+        echo "FORUM_KEY=${{ env.FORUM_KEY }}" >> $GITHUB_ENV
+        echo "START_PAGE=${{ env.START_PAGE }}" >> $GITHUB_ENV
+        echo "END_PAGE=${{ env.END_PAGE }}" >> $GITHUB_ENV
+        echo "RANDOM_FORUM=${{ env.RANDOM_FORUM }}" >> $GITHUB_ENV
+        echo "ZIP_CONTENT=${{ env.ZIP_CONTENT }}" >> $GITHUB_ENV
+        echo "已配置环境变量："
+        echo "- MODE: ${{ env.MODE }}"
+        echo "- FORUM_KEY: ${{ env.FORUM_KEY }}"
+        echo "- START_PAGE: ${{ env.START_PAGE }}"
+        echo "- END_PAGE: ${{ env.END_PAGE }}"
+        echo "- RANDOM_FORUM: ${{ env.RANDOM_FORUM }}"
+        echo "- ZIP_CONTENT: ${{ env.ZIP_CONTENT }}"
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -68,7 +124,23 @@ jobs:
       with:
         tag_name: "每日涩涩-${{ env.CURRENT_DATE }}"
         name: "每日涩涩·${{ env.CURRENT_DATE }}"
-        body: "每日涩涩·${{ env.CURRENT_DATE }}\n\n优化内容：\n1. 避免打包空文件夹\n2. 优化大文件和多文件的压缩和上传\n3. 修复发布步骤中ZIP文件查找问题"
+        body: |
+          每日涩涩·${{ env.CURRENT_DATE }}
+          
+          优化内容：
+          1. 避免打包空文件夹
+          2. 优化大文件和多文件的压缩和上传
+          3. 修复发布步骤中ZIP文件查找问题
+          4. 支持自定义爬虫参数配置
+          5. 图片类压缩包命名为"每日涩涩-雅俗共赏"，文学类为"每日涩涩-快乐齐天"
+          
+          本次运行参数：
+          - 模式：${{ env.MODE }}
+          - 板块：${{ env.FORUM_KEY }}
+          - 起始页面：${{ env.START_PAGE }}
+          - 结束页面：${{ env.END_PAGE }}
+          - 随机板块：${{ env.RANDOM_FORUM }}
+          - 打包内容：${{ env.ZIP_CONTENT }}
         draft: false
         prerelease: false
         fail_on_unmatched_files: false
