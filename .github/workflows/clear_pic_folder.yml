@@ -17,6 +17,6 @@ jobs:
       - name: Clear pic folder
         run: |
           cd code
-          rm -f -r /Archive/*
-          rm -f -r /欢迎回家/Archive/*
+          rm -f -r ./Archive/*
+          rm -f -r ./欢迎回家/Archive/*
           echo "old files cleared"

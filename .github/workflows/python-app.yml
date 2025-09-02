@@ -43,13 +43,13 @@ jobs:
       run: |
         # mkdir -p code/pic
         cd code
-        python 草榴_P_auto.py
+        python legacy_scripts/草榴_P_auto.py
     
     - name: Runner (Novels)
       run: |
         # mkdir -p code/欢迎回家/Archive
         cd code
-        python caoliu_word.py
+        python legacy_scripts/caoliu_word.py
 
     - name: Commit changes
       run: |

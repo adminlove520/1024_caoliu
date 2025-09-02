@@ -37,7 +37,7 @@ jobs:
       run: |
         cd ./code
         echo "开始运行GitHub Actions专用爬虫脚本..."
-        python 草榴_P_github_actions.py
+        python scripts/草榴_P_github_actions.py
         echo "爬虫脚本执行完成"
 
     - name: Find all created ZIP files
