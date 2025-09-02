@@ -14,13 +14,15 @@
 
 import sys
 import os
-from utils.logger import logger
 
 # 设置工作目录为脚本所在目录的父目录
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(script_dir)
 
 sys.path.append(project_root)
+
+# 现在可以正确导入模块了
+from utils.logger import logger
 
 # 导入并运行main.py中的GitHub Actions模式
 if __name__ == '__main__':

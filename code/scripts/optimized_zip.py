@@ -6,6 +6,12 @@ from datetime import datetime
 import shutil
 import sys
 
+# 确保能够正确导入项目模块
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
 # 确保中文正常显示
 sys.stdout.reconfigure(encoding='utf-8')
 sys.stderr.reconfigure(encoding='utf-8')
