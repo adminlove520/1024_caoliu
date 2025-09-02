@@ -31,18 +31,22 @@ if __name__ == '__main__':
     logger.info(f"脚本目录: {script_dir}")
     logger.info(f"项目根目录: {project_root}")
     
+    # 显示环境变量，用于调试
+    logger.info("当前环境变量配置:")
+    logger.info(f"- MODE: {os.environ.get('MODE', '未设置')}")
+    logger.info(f"- FORUM_KEY: {os.environ.get('FORUM_KEY', '未设置')}")
+    logger.info(f"- START_PAGE: {os.environ.get('START_PAGE', '未设置')}")
+    logger.info(f"- END_PAGE: {os.environ.get('END_PAGE', '未设置')}")
+    logger.info(f"- RANDOM_FORUM: {os.environ.get('RANDOM_FORUM', '未设置')}")
+    logger.info(f"- ZIP_CONTENT: {os.environ.get('ZIP_CONTENT', '未设置')}")
+    logger.info(f"- MAX_POSTS_PER_PAGE: {os.environ.get('MAX_POSTS_PER_PAGE', '未设置')}")
+    logger.info(f"- MAX_PICS_PER_POST: {os.environ.get('MAX_PICS_PER_POST', '未设置')}")
+    
     try:
         # 导入主模块
         from main import CrawlerMain
-        import argparse
         
-        # 创建命令行参数对象
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--mode', type=str, default='github_actions')
-        parser.add_argument('--zip', action='store_true', default=True)
-        args = parser.parse_args([])  # 创建空参数列表，使用默认值
-        
-        # 运行GitHub Actions模式
+        # 直接运行主程序，让它自己解析命令行参数和环境变量
         sys.exit(CrawlerMain.main())
     except Exception as e:
         logger.exception("GitHub Actions专用爬虫启动失败")
