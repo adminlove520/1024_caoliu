@@ -23,7 +23,7 @@ on:
       start_page:
         description: '起始页面'
         required: true
-        default: 5
+        default: 1
         type: number
       end_page:
         description: '结束页面'
@@ -40,6 +40,16 @@ on:
         required: true
         default: true
         type: boolean
+      max_posts_per_page:
+        description: '每页最多处理帖子数量'
+        required: false
+        default: 5
+        type: number
+      max_pics_per_post:
+        description: '每个帖子最多下载图片数量'
+        required: false
+        default: 20
+        type: number
   push:
     branches:
       - main
@@ -52,12 +62,12 @@ jobs:
       PYTHONUTF8: 1
       MODE: ${{ inputs.mode || 'github_actions' }}
       FORUM_KEY: ${{ inputs.forum_key || 'pics' }}
-      START_PAGE: ${{ inputs.start_page || '5' }}
+      START_PAGE: ${{ inputs.start_page || '1' }}
       END_PAGE: ${{ inputs.end_page || '3' }}
       RANDOM_FORUM: ${{ inputs.random_forum || 'true' }}
       ZIP_CONTENT: ${{ inputs.zip_content || 'true' }}
-      MAX_POSTS_PER_PAGE: 5  # 每页最多处理5个帖子
-      MAX_PICS_PER_POST: 20  # 每个帖子最多下载20张图片
+      MAX_POSTS_PER_PAGE: ${{ inputs.max_posts_per_page || '5' }}  # 每页最多处理5个帖子
+      MAX_PICS_PER_POST: ${{ inputs.max_pics_per_post || '20' }}  # 每个帖子最多下载20张图片
 
     steps:
     - name: Checkout repository
