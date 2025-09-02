@@ -17,7 +17,7 @@ class RequestUtils:
         # 添加随机User-Agent
         self.headers['User-Agent'] = self.ua.random
     
-    def get(self, url, headers=None, timeout=30, retry=Config.MAX_RETRY, delay=Config.DOWNLOAD_DELAY):
+    def get(self, url, headers=None, timeout=30, retry=Config.MAX_RETRY, delay=Config.DOWNLOAD_DELAY, **kwargs):
         """
         发送GET请求，支持重试和延迟
         
@@ -27,6 +27,7 @@ class RequestUtils:
             timeout: 超时时间（秒）
             retry: 重试次数
             delay: 请求延迟（秒）
+            **kwargs: 传递给requests.get的其他参数
         
         返回:
             response对象或None（如果请求失败）
@@ -43,7 +44,7 @@ class RequestUtils:
         for attempt in range(retry + 1):
             try:
                 logger.info(f"请求URL: {url} (尝试 {attempt + 1}/{retry + 1})")
-                response = requests.get(url, headers=request_headers, timeout=timeout)
+                response = requests.get(url, headers=request_headers, timeout=timeout, **kwargs)
                 response.raise_for_status()  # 抛出HTTP错误
                 logger.info(f"请求成功: {url}")
                 return response
