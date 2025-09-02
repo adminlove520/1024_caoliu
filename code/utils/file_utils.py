@@ -57,17 +57,7 @@ class OptimizedZipper:
             return False
     
     def zip_directory(self, source_dir, output_path, exclude_empty_dirs=True):
-        """
-        优化的目录打包函数
-        
-        参数:
-            source_dir: 源目录路径
-            output_path: 输出ZIP文件路径
-            exclude_empty_dirs: 是否排除空目录
-        
-        返回:
-            (success, file_count, total_size)
-        """
+        """优化的目录打包函数"""
         start_time = time.time()
         total_files = 0
         total_size = 0
@@ -110,16 +100,7 @@ class OptimizedZipper:
         return True, total_files, total_size
     
     def create_optimized_zips(self, target_dirs, output_base_dir):
-        """
-        为多个目录创建优化的zip文件
-        
-        参数:
-            target_dirs: 目标目录列表
-            output_base_dir: 输出基础目录
-        
-        返回:
-            结果列表 [(dir_path, success, file_count, total_size), ...]
-        """
+        """为多个目录创建优化的zip文件"""
         results = []
         
         for source_dir in target_dirs:
@@ -154,7 +135,7 @@ class OptimizedZipper:
                     if forum_info['name'] in source_dir or forum_key in source_dir:
                         category = forum_key
                         break
-                         
+                          
             # 创建分类目录
             category_dir = os.path.join(output_dir, category)
             FileUtils.create_directory(category_dir)
