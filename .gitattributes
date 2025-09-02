@@ -1,1 +1,2 @@
-*.zip filter=lfs diff=lfs merge=lfs -text
+# 项目文件属性配置
+# 让zip文件通过普通Git方式管理，不使用Git LFS
