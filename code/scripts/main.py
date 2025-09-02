@@ -35,7 +35,7 @@ class CrawlerMain:
         # 通用参数
         parser.add_argument('--forum', '-f', type=str, default='pics',
                             help='论坛板块键名')
-        parser.add_argument('--start_page', type=int, default=5,
+        parser.add_argument('--start_page', type=int, default=1,
                             help='起始页面')
         parser.add_argument('--end_page', type=int, default=3,
                             help='结束页面')
@@ -60,8 +60,9 @@ class CrawlerMain:
     def run_pic_crawler(args):
         """运行图片爬虫"""
         forum_key = args.forum
-        start_page = args.start_page
-        end_page = args.end_page
+        # 修复页面范围，确保起始页面小于结束页面
+        start_page = min(args.start_page, args.end_page)
+        end_page = max(args.start_page, args.end_page)
         max_posts = getattr(args, 'max_posts', 5)
         max_pics = getattr(args, 'max_pics', 20)
         
@@ -80,8 +81,9 @@ class CrawlerMain:
     def run_literature_crawler(args):
         """运行文学爬虫"""
         forum_key = args.forum
-        start_page = args.start_page
-        end_page = args.end_page
+        # 修复页面范围，确保起始页面小于结束页面
+        start_page = min(args.start_page, args.end_page)
+        end_page = max(args.start_page, args.end_page)
         max_posts = getattr(args, 'max_posts', 5)
         
         logger.info("===== 开始文学爬虫任务 ====")
