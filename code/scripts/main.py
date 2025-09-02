@@ -48,6 +48,12 @@ class CrawlerMain:
         parser.add_argument('--zip', action=argparse.BooleanOptionalAction, default=True,
                             help='是否打包下载的内容')
         
+        # 性能优化参数
+        parser.add_argument('--max_posts', type=int, default=5, 
+                            help='每页最多处理的帖子数量')
+        parser.add_argument('--max_pics', type=int, default=20, 
+                            help='每个帖子最多下载的图片数量')
+        
         return parser.parse_args()
     
     @staticmethod
@@ -56,9 +62,15 @@ class CrawlerMain:
         forum_key = args.forum
         start_page = args.start_page
         end_page = args.end_page
+        max_posts = getattr(args, 'max_posts', 5)
+        max_pics = getattr(args, 'max_pics', 20)
         
         logger.info("===== 开始图片爬虫任务 ====")
-        success_count = pic_crawler.crawl(forum_key, start_page, end_page, use_multiprocess=False)
+        logger.info(f"配置参数: 板块={forum_key}, 页面范围={start_page}-{end_page}, 每页最多{max_posts}个帖子, 每个帖子最多{max_pics}张图片")
+        
+        # 传递限制参数给爬虫
+        success_count = pic_crawler.crawl(forum_key, start_page, end_page, use_multiprocess=False, 
+                                         max_posts=max_posts, max_pics=max_pics)
         logger.info(f"===== 图片爬虫任务完成，成功爬取 {success_count} 个帖子 ====")
         
         if args.zip:
@@ -70,9 +82,13 @@ class CrawlerMain:
         forum_key = args.forum
         start_page = args.start_page
         end_page = args.end_page
+        max_posts = getattr(args, 'max_posts', 5)
         
         logger.info("===== 开始文学爬虫任务 ====")
-        success_count = literature_crawler.crawl(forum_key, start_page, end_page)
+        logger.info(f"配置参数: 板块={forum_key}, 页面范围={start_page}-{end_page}, 每页最多{max_posts}个帖子")
+        
+        # 传递限制参数给爬虫
+        success_count = literature_crawler.crawl(forum_key, start_page, end_page, max_posts=max_posts)
         logger.info(f"===== 文学爬虫任务完成，成功爬取 {success_count} 个帖子 ====")
         
         if args.zip:
@@ -148,6 +164,10 @@ class CrawlerMain:
         random_forum = os.environ.get('RANDOM_FORUM', str(args.random)).lower() == 'true'
         zip_content = os.environ.get('ZIP_CONTENT', str(args.zip)).lower() == 'true'
         
+        # 读取性能优化参数
+        max_posts = int(os.environ.get('MAX_POSTS_PER_PAGE', str(args.max_posts)))
+        max_pics = int(os.environ.get('MAX_PICS_PER_POST', str(args.max_pics)))
+        
         # 如果需要随机选择板块
         if random_forum:
             forum_key = random.choice(list(Config.FORUMS.keys()))
@@ -163,6 +183,15 @@ class CrawlerMain:
         args.start_page = start_page
         args.end_page = end_page
         args.zip = zip_content
+        args.max_posts = max_posts
+        args.max_pics = max_pics
+        
+        logger.info(f"GitHub Actions 运行配置:")
+        logger.info(f"- 模式: {args.mode}")
+        logger.info(f"- 板块: {args.forum}")
+        logger.info(f"- 页面范围: {args.start_page}-{args.end_page}")
+        logger.info(f"- 每页最多处理: {args.max_posts}个帖子")
+        logger.info(f"- 每个帖子最多下载: {args.max_pics}张图片")
         
         # 执行爬虫
         CrawlerMain.run_pic_crawler(args)

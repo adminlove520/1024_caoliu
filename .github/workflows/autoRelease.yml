@@ -47,6 +47,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 120  # 限制作业运行时间为2小时
     env:
       PYTHONUTF8: 1
       MODE: ${{ inputs.mode || 'github_actions' }}
@@ -55,6 +56,8 @@ jobs:
       END_PAGE: ${{ inputs.end_page || '3' }}
       RANDOM_FORUM: ${{ inputs.random_forum || 'true' }}
       ZIP_CONTENT: ${{ inputs.zip_content || 'true' }}
+      MAX_POSTS_PER_PAGE: 5  # 每页最多处理5个帖子
+      MAX_PICS_PER_POST: 20  # 每个帖子最多下载20张图片
 
     steps:
     - name: Checkout repository
@@ -70,6 +73,8 @@ jobs:
         echo "END_PAGE=${{ env.END_PAGE }}" >> $GITHUB_ENV
         echo "RANDOM_FORUM=${{ env.RANDOM_FORUM }}" >> $GITHUB_ENV
         echo "ZIP_CONTENT=${{ env.ZIP_CONTENT }}" >> $GITHUB_ENV
+        echo "MAX_POSTS_PER_PAGE=${{ env.MAX_POSTS_PER_PAGE }}" >> $GITHUB_ENV
+        echo "MAX_PICS_PER_POST=${{ env.MAX_PICS_PER_POST }}" >> $GITHUB_ENV
         echo "已配置环境变量："
         echo "- MODE: ${{ env.MODE }}"
         echo "- FORUM_KEY: ${{ env.FORUM_KEY }}"
@@ -77,6 +82,8 @@ jobs:
         echo "- END_PAGE: ${{ env.END_PAGE }}"
         echo "- RANDOM_FORUM: ${{ env.RANDOM_FORUM }}"
         echo "- ZIP_CONTENT: ${{ env.ZIP_CONTENT }}"
+        echo "- MAX_POSTS_PER_PAGE: ${{ env.MAX_POSTS_PER_PAGE }}"
+        echo "- MAX_PICS_PER_POST: ${{ env.MAX_PICS_PER_POST }}"
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -94,6 +101,7 @@ jobs:
         echo "开始运行GitHub Actions专用爬虫脚本..."
         python scripts/草榴_P_github_actions.py
         echo "爬虫脚本执行完成"
+      timeout-minutes: 110  # 限制爬虫执行时间为110分钟
 
     - name: Find all created ZIP files
       run: |
@@ -115,6 +123,7 @@ jobs:
         # 显示找到的文件列表（前5个）
         echo "找到的ZIP文件列表："
         head -5 created_zips.txt
+      timeout-minutes: 5  # 限制此步骤为5分钟
 
     - name: Create GitHub Release and upload assets
       uses: softprops/action-gh-release@v1
@@ -132,6 +141,8 @@ jobs:
           3. 修复发布步骤中ZIP文件查找问题
           4. 支持自定义爬虫参数配置
           5. 图片类压缩包命名为"每日涩涩-雅俗共赏"，文学类为"每日涩涩-快乐齐天"
+          6. 优化运行时间，限制为2小时内完成
+          7. 增加资源限制，避免过度消耗GitHub Actions资源
           
           本次运行参数：
           - 模式：${{ env.MODE }}
@@ -140,10 +151,13 @@ jobs:
           - 结束页面：${{ env.END_PAGE }}
           - 随机板块：${{ env.RANDOM_FORUM }}
           - 打包内容：${{ env.ZIP_CONTENT }}
+          - 每页最多处理帖子：${{ env.MAX_POSTS_PER_PAGE }}
+          - 每个帖子最多下载图片：${{ env.MAX_PICS_PER_POST }}
         draft: false
         prerelease: false
         fail_on_unmatched_files: false
         files: './code/created_zips.txt'
+      timeout-minutes: 5  # 限制发布步骤为5分钟
 
     - name: Debug release information
       run: |
@@ -151,3 +165,4 @@ jobs:
         ls -la ./code/
         echo "创建的ZIP文件列表："
         cat ./code/created_zips.txt
+      timeout-minutes: 1  # 限制调试步骤为1分钟

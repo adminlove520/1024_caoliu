@@ -1,5 +1,8 @@
-import re
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
+import re
 import time
 from config.settings import Config
 from utils.logger import logger, load_crawled_urls, save_crawled_url
@@ -41,12 +44,13 @@ class PicCrawler:
         logger.info(f"从页面 {page} 获取到 {len(urls)} 个URL")
         return urls
     
-    def get_pic_list(self, post_url):
+    def get_pic_list(self, post_url, max_pics=None):
         """
         从帖子页面获取图片列表
         
         参数:
             post_url: 帖子URL
+            max_pics: 最大返回图片数量，None表示无限制
         
         返回:
             (标题, 图片URL列表)
@@ -73,7 +77,17 @@ class PicCrawler:
             # 提取图片URL
             pic_urls = re.findall("ess-data='(.*?)'", text)
             
-            logger.info(f"帖子 '{title}' 包含 {len(pic_urls)} 张图片")
+            # 应用最大图片数量限制
+            if max_pics and max_pics > 0:
+                original_count = len(pic_urls)
+                if original_count > max_pics:
+                    pic_urls = pic_urls[:max_pics]
+                    logger.info(f"帖子 '{title}' 包含 {original_count} 张图片，限制为 {max_pics} 张")
+                else:
+                    logger.info(f"帖子 '{title}' 包含 {len(pic_urls)} 张图片")
+            else:
+                logger.info(f"帖子 '{title}' 包含 {len(pic_urls)} 张图片")
+            
             return title, pic_urls
         except Exception as e:
             logger.exception(f"解析帖子页面失败: {full_url}")
@@ -183,7 +197,8 @@ class PicCrawler:
         """多进程下载的包装函数"""
         self.save_pic(url, count, title, forum_key)
     
-    def crawl(self, forum_key, start_page, end_page, use_multiprocess=False):
+    def crawl(self, forum_key, start_page, end_page, use_multiprocess=False, 
+              max_posts=None, max_pics=None):
         """
         执行爬虫任务
         
@@ -192,11 +207,14 @@ class PicCrawler:
             start_page: 起始页面
             end_page: 结束页面
             use_multiprocess: 是否使用多进程下载
+            max_posts: 每页最多处理的帖子数量，None表示无限制
+            max_pics: 每个帖子最多下载的图片数量，None表示无限制
         
         返回:
             成功爬取的帖子数量
         """
         logger.info(f"开始爬取板块 '{Config.get_forum_name(forum_key)}'，页面范围 {start_page}-{end_page}")
+        logger.info(f"性能限制参数: 每页最多{max_posts if max_posts else '无限制'}个帖子，每个帖子最多{max_pics if max_pics else '无限制'}张图片")
         
         # 加载已爬取的URL
         crawled_urls = load_crawled_urls(self.log_file)
@@ -208,17 +226,29 @@ class PicCrawler:
         for page in range(start_page, end_page + 1):
             post_urls = self.get_urls_from_page(str(page), forum_key)
             
+            # 应用每页最大帖子数量限制
+            if max_posts and max_posts > 0 and len(post_urls) > max_posts:
+                logger.info(f"页面 {page} 有 {len(post_urls)} 个帖子，限制为 {max_posts} 个")
+                post_urls = post_urls[:max_posts]
+            
             # 遍历帖子
+            processed_posts = 0
             for post_url in post_urls:
+                # 如果已达到每页最大处理数量，跳出循环
+                if max_posts and max_posts > 0 and processed_posts >= max_posts:
+                    logger.info(f"已达到每页最大处理数量 {max_posts}，停止处理此页面")
+                    break
+                
                 if post_url not in crawled_urls:
                     try:
-                        # 获取图片列表
-                        title, pic_urls = self.get_pic_list(post_url)
+                        # 获取图片列表（带数量限制）
+                        title, pic_urls = self.get_pic_list(post_url, max_pics=max_pics)
                         
                         # 如果有图片，下载
                         if pic_urls:
                             self.download_pics(pic_urls, title, forum_key, use_multiprocess)
                             success_count += 1
+                            processed_posts += 1
                         
                         # 保存已爬取的URL
                         save_crawled_url(post_url, self.log_file)
