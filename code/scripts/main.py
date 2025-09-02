@@ -227,9 +227,9 @@ class CrawlerMain:
         
         # 创建输出文件名
         if content_type == 'pic':
-            zip_filename = "每日内容-雅俗共赏.zip"
+            zip_filename = "每日涩涩-雅俗共赏.zip"
         else:
-            zip_filename = "每日内容-快乐齐天.zip"
+            zip_filename = "每日涩涩-快乐齐天.zip"
         
         # 使用统一的ZIP输出目录
         output_dir = Config.ZIP_OUTPUT_DIR
