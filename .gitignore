@@ -1,0 +1,68 @@
+# Python
+*.py[cod]
+*$py.class
+__pycache__/
+
+# 日志文件
+*.log
+logs/
+
+# 数据文件
+*.csv
+*.json
+*.db
+*.sqlite
+
+# 临时文件
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# 环境配置
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 虚拟环境
+venv/
+env/
+env.local/
+env.development.local/
+env.test.local/
+env.production.local/
+
+# 打包文件
+*.zip
+*.tar.gz
+*.tar.bz2
+*.rar
+
+# 编辑器配置
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 系统文件
+*.dll
+*.exe
+*.bin
+*.so
+*.dylib
+
+# 爬取数据
+pic/
+Archive/
+literature/
+
+# GitHub Actions 相关
+created_zips.txt

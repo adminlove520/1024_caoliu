@@ -11,69 +11,74 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      PYTHONUTF8: 1
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set environment variables
       run: |
         echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        echo "CURRENT_TIME=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
 
-    - name: Create release
-      id: create_release
-      uses: actions/create-release@v1
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f ./code/requirements.txt ]; then pip install -r ./code/requirements.txt; fi
+
+    - name: Run GitHub Actions optimized crawler
+      run: |
+        cd ./code
+        echo "开始运行GitHub Actions专用爬虫脚本..."
+        python 草榴_P_github_actions.py
+        echo "爬虫脚本执行完成"
+
+    - name: Find all created ZIP files
+      run: |
+        cd ./code
+        echo "开始查找创建的ZIP文件..."
+        
+        # 查找所有zip文件并输出到临时文件
+        find . -type f -name "*.zip" > created_zips.txt
+        
+        # 显示找到的文件数量
+        echo "找到 $(wc -l < created_zips.txt) 个ZIP文件"
+        
+        # 如果没有找到文件，创建一个空文件以避免后续步骤失败
+        if [ ! -s created_zips.txt ]; then
+            echo "没有找到ZIP文件，创建空文件"
+            echo "" > created_zips.txt
+        fi
+        
+        # 显示找到的文件列表（前5个）
+        echo "找到的ZIP文件列表："
+        head -5 created_zips.txt
+
+    - name: Create GitHub Release and upload assets
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: "每日涩涩-${{ env.CURRENT_DATE }}"
-        release_name: "每日涩涩·${{ env.CURRENT_DATE }}"
-        body: "每日涩涩·${{ env.CURRENT_DATE }}"
+        name: "每日涩涩·${{ env.CURRENT_DATE }}"
+        body: "每日涩涩·${{ env.CURRENT_DATE }}\n\n优化内容：\n1. 避免打包空文件夹\n2. 优化大文件和多文件的压缩和上传"
         draft: false
         prerelease: false
+        fail_on_unmatched_files: false
+        files: |
+          ./code/*.zip
+          ./code/**/*.zip
 
     - name: Debug release information
       run: |
-        echo "Tag Name: ${{ steps.create_release.outputs.tag_name }}"
-        echo "Release ID: ${{ steps.create_release.outputs.id }}"
-
-    - name: Find and upload all zip files in specified directories
-      run: |
-        # Check if the release was created successfully
-        if [ -z "${{ steps.create_release.outputs.tag_name }}" ]; then
-          echo "Release creation failed. Exiting..."
-          exit 1
-        fi
-
-        # Initialize UPLOAD_FILE to an empty string
-        UPLOAD_FILE=""
-
-        for dir in "./code/欢迎回家/Archive" "./code/Archive"; do
-          find "$dir" -type f -name "*.zip" | while read file; do
-            if [ -f "$file" ]; then
-              echo "Found $file"
-              UPLOAD_FILE="$file"
-              echo "UPLOAD_FILE=$file" >> $GITHUB_ENV
-              BASENAME=$(basename "$file")
-              echo "UPLOAD_FILE_BASENAME=$BASENAME" >> $GITHUB_ENV
-            else
-              echo "File $file does not exist. Skipping..."
-            fi
-          done
-        done
-
-        # If no zip file was found, set UPLOAD_FILE to an empty string
-        if [ -z "$UPLOAD_FILE" ]; then
-          echo "UPLOAD_FILE=" >> $GITHUB_ENV
-        fi
-
-    - name: Upload zip files to release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env.UPLOAD_FILE }}
-        asset_name: ${{ env.UPLOAD_FILE_BASENAME }}
-        asset_content_type: application/zip
-      if: env.UPLOAD_FILE != ''
+        echo "当前目录结构："
+        ls -la ./code/
+        echo "创建的ZIP文件列表："
+        cat ./code/created_zips.txt
