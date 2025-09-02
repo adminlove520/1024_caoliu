@@ -3,9 +3,9 @@
 *$py.class
 __pycache__/
 
-# 日志文件
-*.log
-logs/
+# # 日志文件
+# *.log
+# logs/
 
 # 数据文件
 *.csv
@@ -37,11 +37,11 @@ env.development.local/
 env.test.local/
 env.production.local/
 
-# 打包文件
-*.zip
-*.tar.gz
-*.tar.bz2
-*.rar
+# # 打包文件
+# *.zip
+# *.tar.gz
+# *.tar.bz2
+# *.rar
 
 # 编辑器配置
 .vscode/
@@ -59,10 +59,10 @@ env.production.local/
 *.so
 *.dylib
 
-# 爬取数据
-pic/
-Archive/
-literature/
+# # 爬取数据
+# pic/
+# Archive/
+# literature/
 
-# GitHub Actions 相关
-created_zips.txt
+# # GitHub Actions 相关
+# created_zips.txt
